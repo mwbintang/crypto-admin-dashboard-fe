@@ -57,3 +57,34 @@ code {
   cursor: not-allowed;
 }
 
+/* === ALERT STYLES === */
+.alert {
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Success */
+.alert.success {
+  background-color: #22c55e; /* Tailwind green-500 */
+}
+
+/* Error */
+.alert.error {
+  background-color: #ef4444; /* Tailwind red-500 */
+}
+
+/* Info */
+.alert.info {
+  background-color: #3b82f6; /* Tailwind blue-500 */
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+

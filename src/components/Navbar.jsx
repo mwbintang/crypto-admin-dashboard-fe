@@ -2,8 +2,15 @@ import React from "react";
 import Button from "./Button";
 
 const handleLogout = () => {
-  // your logout logic here
+  // Clear stored auth data
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  // Optionally show a message or alert
   console.log("Logging out...");
+
+  // Redirect to login page
+  window.location.href = "/login";
 };
 
 const Navbar = () => {
