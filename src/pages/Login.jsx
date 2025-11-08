@@ -5,6 +5,7 @@ import Form from "../components/Form";
 import Button from "../components/Button";
 import Alert from "../components/Alert";
 import { useNavigate } from "react-router-dom";
+import { loginService } from "../services/usersService";
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,18 +16,34 @@ const LoginPage = () => {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (form.username === "admin" && form.password === "12345") {
-            setAlert({ message: "Login successful!", type: "success" });
-            localStorage.setItem("token", "dummy-token");
-
-            setTimeout(() => navigate("/dashboard"), 1200);
-        } else if (!form.username || !form.password) {
+        if (!form.username || !form.password) {
             setAlert({ message: "Please fill all fields", type: "error" });
-        } else {
-            setAlert({ message: "Invalid username or password", type: "error" });
+            return;
+        }
+
+        try {
+            // Call loginService with form data
+            const loginResp = await loginService({
+                username: form.username,
+                password: form.password,
+            });
+
+            // Assuming loginResp contains a token
+            if (loginResp && loginResp.token) {
+                localStorage.setItem("token", loginResp.token);
+                setAlert({ message: "Login successful!", type: "success" });
+
+                // Redirect after a short delay
+                setTimeout(() => navigate("/dashboard"), 1200);
+            } else {
+                setAlert({ message: "Invalid username or password", type: "error" });
+            }
+        } catch (err) {
+            // Catch API errors
+            setAlert({ message: err.message || "Login failed", type: "error" });
         }
     };
 

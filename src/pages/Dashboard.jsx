@@ -9,11 +9,11 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-import { dummyStats, dummyTransactionTypeData, dummyTransactionVolumeData } from "../constants/dummy/dashboard";
 import Loading from "../components/Loading";
 import LineChart from "../components/LineChart";
 import PieChart from "../components/PieChart";
 import StatCard from "../components/StatCard";
+import { dashboardService } from "../services/transaction";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -29,17 +29,53 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Simulate fetching dummy data
-        setTimeout(() => {
-            // === Dummy stats ===
-            setStats(dummyStats);
-            setTransactionTypeData(dummyTransactionTypeData);
-            setTransactionVolumeData(dummyTransactionVolumeData)
+        async function fetchStats() {
+            try {
+                const res = await dashboardService();
+                // Adjust stats
+                setStats({
+                    totalTransactions: res.totalVolume,
+                    totalVolume: res.totalAmount,
+                    totalUsers: res.totalUsers,
+                });
 
-            setLoading(false);
-        }, 1200);
+                // Transaction volume per day for chart
+                setTransactionVolumeData({
+                    labels: res.transactionsPerDay.map((t) => {
+                        // You can convert date to day name if needed
+                        const date = new Date(t.date);
+                        return date.toLocaleDateString("en-US", { weekday: "short" }); // Mon, Tue, ...
+                    }),
+                    datasets: [
+                        {
+                            label: "Transaction Volume ($)",
+                            data: res.transactionsPerDay.map((t) => t.totalAmount),
+                            backgroundColor: "rgba(37, 99, 235, 0.6)",
+                        },
+                    ],
+                });
+
+                // Transaction type distribution chart
+                setTransactionTypeData({
+                    labels: Object.keys(res.distributionByType).map(
+                        (type) => type.charAt(0).toUpperCase() + type.slice(1) // capitalize
+                    ),
+                    datasets: [
+                        {
+                            data: Object.values(res.distributionByType),
+                            backgroundColor: ["#22c55e", "#ef4444", "#eab308"], // Deposit, Withdrawal, Transfer
+                        },
+                    ],
+                });
+            } catch (err) {
+                console.error("Failed to fetch dashboard stats:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchStats();
     }, []);
-
 
 
     return (
